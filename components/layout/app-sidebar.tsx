@@ -10,6 +10,7 @@ import {
 import { signOut } from "@/server/actions/auth";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 
 const navItems = [
   { href: "/dashboard", label: "Дашборд", icon: BarChart3 },
@@ -64,18 +65,7 @@ export function AppSidebar({ email }: { email: string }) {
         </form>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-card/95 px-1.5 pb-[calc(env(safe-area-inset-bottom)+0.45rem)] pt-1.5 backdrop-blur md:hidden">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            <item.icon className="h-4 w-4" />
-            <span className="max-w-full truncate">{item.label}</span>
-          </Link>
-        ))}
-      </nav>
+      <MobileBottomNav />
     </>
   );
 }

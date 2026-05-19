@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { BrowserNoiseGuard } from "@/components/debug/browser-noise-guard";
 import "./globals.css";
@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Podcastera",
   description: "Personal knowledge base for YouTube podcasts.",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
@@ -24,6 +25,21 @@ export const metadata: Metadata = {
     shortcut: "/icon.png",
     apple: "/icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Podcastera",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#111111",
 };
 
 export default function RootLayout({
