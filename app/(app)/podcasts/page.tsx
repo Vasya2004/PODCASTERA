@@ -55,7 +55,10 @@ export default async function PodcastsPage({ searchParams }: PageProps) {
           <option value="rating">Высокий рейтинг</option>
           <option value="updated">Недавно обновлённые</option>
         </Select>
-        <Button type="submit" className="h-11 w-full md:h-10">
+        <Button
+          type="submit"
+          className="h-11 w-full bg-neutral-800 text-white hover:bg-neutral-700 active:bg-neutral-700 md:h-10"
+        >
           Поиск
         </Button>
       </form>

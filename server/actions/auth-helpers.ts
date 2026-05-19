@@ -6,15 +6,15 @@ import { createClient } from "@/lib/supabase/server";
 const getUserContext = cache(async () => {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { session },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  if (error || !user) {
+  if (error || !session?.user) {
     redirect("/login");
   }
 
-  return { supabase, user };
+  return { supabase, user: session.user };
 });
 
 export async function requireUser() {

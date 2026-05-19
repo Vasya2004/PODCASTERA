@@ -49,7 +49,10 @@ export default async function InsightsPage({ searchParams }: PageProps) {
           <option value="false">Все</option>
           <option value="true">Избранные</option>
         </Select>
-        <Button type="submit" className="h-11 w-full md:h-10">
+        <Button
+          type="submit"
+          className="h-11 w-full bg-neutral-800 text-white hover:bg-neutral-700 active:bg-neutral-700 md:h-10"
+        >
           Поиск
         </Button>
       </form>
