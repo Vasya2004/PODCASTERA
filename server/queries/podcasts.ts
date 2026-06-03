@@ -283,7 +283,7 @@ export async function getDashboardData() {
       favoriteNotesCount: insights.filter((note) => note.isFavorite).length,
       insightsCount: insights.length,
     },
-    recentPodcasts: podcasts.slice(0, 4),
+    recentPodcasts: podcasts.slice(0, 6),
     favoriteInsights: insights.filter((note) => note.isFavorite).slice(0, 5),
   };
 }
