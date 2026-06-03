@@ -13,6 +13,26 @@ function emptyToNull(value: string | undefined) {
   return value && value.trim() ? value.trim() : null;
 }
 
+type SchemaError = {
+  code?: string;
+  message?: string;
+};
+
+function isMissingHashtagColumn(error: SchemaError | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? "";
+  return (
+    error?.code === "PGRST204" ||
+    (message.includes("hashtag") &&
+      (message.includes("does not exist") || message.includes("schema cache")))
+  );
+}
+
+function withoutHashtag<T extends { hashtag?: unknown }>(payload: T) {
+  const { hashtag, ...rest } = payload;
+  void hashtag;
+  return rest;
+}
+
 export async function createPodcast(
   _previousState: ActionResult,
   formData: FormData,
@@ -37,28 +57,41 @@ export async function createPodcast(
   const watchedAt =
     parsed.data.status === "watched" ? new Date().toISOString() : null;
 
-  const { data, error } = await supabase
+  const podcastPayload = {
+    user_id: user.id,
+    youtube_url: parsed.data.youtubeUrl,
+    youtube_video_id: videoId,
+    title: parsed.data.title,
+    channel_title: emptyToNull(parsed.data.channelTitle),
+    thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
+    duration_seconds:
+      parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
+    published_at: emptyToNull(parsed.data.publishedAt),
+    description: emptyToNull(parsed.data.description),
+    status: parsed.data.status,
+    personal_rating:
+      parsed.data.personalRating === "" ? null : parsed.data.personalRating ?? null,
+    hashtag: emptyToNull(parsed.data.hashtag),
+    watched_at: watchedAt,
+    main_takeaway: emptyToNull(parsed.data.mainTakeaway),
+    summary: emptyToNull(parsed.data.summary),
+  };
+
+  let insertResult = await supabase
     .from("podcasts")
-    .insert({
-      user_id: user.id,
-      youtube_url: parsed.data.youtubeUrl,
-      youtube_video_id: videoId,
-      title: parsed.data.title,
-      channel_title: emptyToNull(parsed.data.channelTitle),
-      thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
-      duration_seconds:
-        parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
-      published_at: emptyToNull(parsed.data.publishedAt),
-      description: emptyToNull(parsed.data.description),
-      status: parsed.data.status,
-      personal_rating:
-        parsed.data.personalRating === "" ? null : parsed.data.personalRating ?? null,
-      watched_at: watchedAt,
-      main_takeaway: emptyToNull(parsed.data.mainTakeaway),
-      summary: emptyToNull(parsed.data.summary),
-    })
+    .insert(podcastPayload)
     .select("id")
     .single();
+
+  if (isMissingHashtagColumn(insertResult.error)) {
+    insertResult = await supabase
+      .from("podcasts")
+      .insert(withoutHashtag(podcastPayload))
+      .select("id")
+      .single();
+  }
+
+  const { data, error } = insertResult;
 
   if (error) {
     if (error.code === "23505") {
@@ -102,27 +135,40 @@ export async function updatePodcast(
         ? undefined
         : null;
 
-  const { error } = await supabase
+  const podcastPayload = {
+    youtube_url: parsed.data.youtubeUrl,
+    youtube_video_id: videoId,
+    title: parsed.data.title,
+    channel_title: emptyToNull(parsed.data.channelTitle),
+    thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
+    duration_seconds:
+      parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
+    published_at: emptyToNull(parsed.data.publishedAt),
+    description: emptyToNull(parsed.data.description),
+    status: parsed.data.status,
+    personal_rating:
+      parsed.data.personalRating === "" ? null : parsed.data.personalRating ?? null,
+    hashtag: emptyToNull(parsed.data.hashtag),
+    watched_at: watchedAt,
+    main_takeaway: emptyToNull(parsed.data.mainTakeaway),
+    summary: emptyToNull(parsed.data.summary),
+  };
+
+  let updateResult = await supabase
     .from("podcasts")
-    .update({
-      youtube_url: parsed.data.youtubeUrl,
-      youtube_video_id: videoId,
-      title: parsed.data.title,
-      channel_title: emptyToNull(parsed.data.channelTitle),
-      thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
-      duration_seconds:
-        parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
-      published_at: emptyToNull(parsed.data.publishedAt),
-      description: emptyToNull(parsed.data.description),
-      status: parsed.data.status,
-      personal_rating:
-        parsed.data.personalRating === "" ? null : parsed.data.personalRating ?? null,
-      watched_at: watchedAt,
-      main_takeaway: emptyToNull(parsed.data.mainTakeaway),
-      summary: emptyToNull(parsed.data.summary),
-    })
+    .update(podcastPayload)
     .eq("id", podcastId)
     .eq("user_id", user.id);
+
+  if (isMissingHashtagColumn(updateResult.error)) {
+    updateResult = await supabase
+      .from("podcasts")
+      .update(withoutHashtag(podcastPayload))
+      .eq("id", podcastId)
+      .eq("user_id", user.id);
+  }
+
+  const { error } = updateResult;
 
   if (error) {
     return failure(error.message);

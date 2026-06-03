@@ -13,18 +13,21 @@ describe("podcastFormSchema", () => {
       channelTitle: "Channel",
       status: "watched",
       personalRating: "9",
+      hashtag: "#strategy",
       tags: "strategy, product",
     });
 
     expect(result.success).toBe(true);
+    expect(result.data?.hashtag).toBe("strategy");
   });
 
-  it("rejects invalid YouTube URLs and ratings", () => {
+  it("rejects invalid YouTube URLs, ratings, and hashtags", () => {
     const result = podcastFormSchema.safeParse({
       youtubeUrl: "https://example.com/video",
       title: "A useful podcast",
       status: "watched",
       personalRating: "11",
+      hashtag: "two words",
     });
 
     expect(result.success).toBe(false);

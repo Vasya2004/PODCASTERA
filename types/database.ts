@@ -57,6 +57,7 @@ export type Database = {
           description: string | null;
           status: PodcastStatus;
           personal_rating: number | null;
+          hashtag: string | null;
           watched_at: string | null;
           main_takeaway: string | null;
           summary: string | null;
@@ -76,6 +77,7 @@ export type Database = {
           description?: string | null;
           status?: PodcastStatus;
           personal_rating?: number | null;
+          hashtag?: string | null;
           watched_at?: string | null;
           main_takeaway?: string | null;
           summary?: string | null;
@@ -93,6 +95,7 @@ export type Database = {
           description?: string | null;
           status?: PodcastStatus;
           personal_rating?: number | null;
+          hashtag?: string | null;
           watched_at?: string | null;
           main_takeaway?: string | null;
           summary?: string | null;

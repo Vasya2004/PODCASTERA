@@ -18,6 +18,7 @@ export type Podcast = {
   description: string | null;
   status: PodcastStatus;
   personalRating: number | null;
+  hashtag: string | null;
   watchedAt: string | null;
   mainTakeaway: string | null;
   summary: string | null;

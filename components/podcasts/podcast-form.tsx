@@ -126,6 +126,18 @@ export function PodcastForm({
             <Label>Рейтинг</Label>
             <RatingSelect defaultValue={podcast?.personalRating} />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="hashtag">Хештег на плашке</Label>
+            <Input
+              id="hashtag"
+              name="hashtag"
+              defaultValue={podcast?.hashtag ?? ""}
+              placeholder="#podcast"
+            />
+            {!state.ok && state.fieldErrors?.hashtag ? (
+              <p className="text-sm text-destructive">{state.fieldErrors.hashtag[0]}</p>
+            ) : null}
+          </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Теги</Label>
             <TagInput defaultTags={podcast?.tags} />

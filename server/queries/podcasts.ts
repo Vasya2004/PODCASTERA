@@ -10,7 +10,7 @@ export type PodcastFilters = {
   sort?: "new" | "watched" | "rating" | "updated";
 };
 
-const podcastSelect = `
+const podcastSelectBase = `
   id,
   youtube_url,
   youtube_video_id,
@@ -31,12 +31,40 @@ const podcastSelect = `
   podcast_tags(tags(id, name, color))
 `;
 
-export async function getPodcasts(filters: PodcastFilters = {}): Promise<Podcast[]> {
-  const { supabase, user } = await requireUser();
+const podcastSelectWithHashtag = podcastSelectBase.replace(
+  "personal_rating,",
+  "personal_rating,\n  hashtag,",
+);
+
+type SchemaError = {
+  code?: string;
+  message?: string;
+};
+
+function isMissingHashtagColumn(error: SchemaError | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? "";
+  return (
+    error?.code === "PGRST204" ||
+    (message.includes("hashtag") &&
+      (message.includes("does not exist") || message.includes("schema cache")))
+  );
+}
+
+function buildPodcastsQuery({
+  supabase,
+  userId,
+  filters,
+  includeHashtag,
+}: {
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"];
+  userId: string;
+  filters: PodcastFilters;
+  includeHashtag: boolean;
+}) {
   let query = supabase
     .from("podcasts")
-    .select(podcastSelect)
-    .eq("user_id", user.id);
+    .select(includeHashtag ? podcastSelectWithHashtag : podcastSelectBase)
+    .eq("user_id", userId);
 
   if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
@@ -44,7 +72,9 @@ export async function getPodcasts(filters: PodcastFilters = {}): Promise<Podcast
 
   if (filters.q) {
     query = query.or(
-      `title.ilike.%${filters.q}%,channel_title.ilike.%${filters.q}%,description.ilike.%${filters.q}%`,
+      includeHashtag
+        ? `title.ilike.%${filters.q}%,channel_title.ilike.%${filters.q}%,description.ilike.%${filters.q}%,hashtag.ilike.%${filters.q}%`
+        : `title.ilike.%${filters.q}%,channel_title.ilike.%${filters.q}%,description.ilike.%${filters.q}%`,
     );
   }
 
@@ -63,7 +93,27 @@ export async function getPodcasts(filters: PodcastFilters = {}): Promise<Podcast
       break;
   }
 
-  const { data, error } = await query;
+  return query;
+}
+
+export async function getPodcasts(filters: PodcastFilters = {}): Promise<Podcast[]> {
+  const { supabase, user } = await requireUser();
+  let { data, error } = await buildPodcastsQuery({
+    supabase,
+    userId: user.id,
+    filters,
+    includeHashtag: true,
+  });
+
+  if (isMissingHashtagColumn(error)) {
+    ({ data, error } = await buildPodcastsQuery({
+      supabase,
+      userId: user.id,
+      filters,
+      includeHashtag: false,
+    }));
+  }
+
   if (error) {
     throw new Error(error.message);
   }
@@ -80,12 +130,21 @@ export async function getPodcasts(filters: PodcastFilters = {}): Promise<Podcast
 
 export async function getPodcast(id: string): Promise<Podcast | null> {
   const { supabase, user } = await requireUser();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("podcasts")
-    .select(podcastSelect)
+    .select(podcastSelectWithHashtag)
     .eq("user_id", user.id)
     .eq("id", id)
     .maybeSingle();
+
+  if (isMissingHashtagColumn(error)) {
+    ({ data, error } = await supabase
+      .from("podcasts")
+      .select(podcastSelectBase)
+      .eq("user_id", user.id)
+      .eq("id", id)
+      .maybeSingle());
+  }
 
   if (error) {
     throw new Error(error.message);

@@ -15,6 +15,15 @@ export const noteTypeSchema = z.enum([
   "question",
 ]);
 
+export const podcastHashtagSchema = z
+  .string()
+  .trim()
+  .max(40, "Hashtag must be 40 characters or fewer")
+  .transform((value) => value.replace(/^#+/, ""))
+  .refine((value) => !/\s/.test(value), {
+    message: "Hashtag cannot contain spaces",
+  });
+
 export const podcastFormSchema = z.object({
   youtubeUrl: z
     .string()
@@ -37,6 +46,7 @@ export const podcastFormSchema = z.object({
     .max(10)
     .optional()
     .or(z.literal("")),
+  hashtag: podcastHashtagSchema.optional().or(z.literal("")),
   mainTakeaway: z.string().trim().max(2000).optional().or(z.literal("")),
   summary: z.string().trim().max(6000).optional().or(z.literal("")),
   tags: z.string().trim().optional().or(z.literal("")),

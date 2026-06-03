@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { NoteCard } from "@/components/notes/note-card";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { PodcastForm } from "@/components/podcasts/podcast-form";
+import { PodcastHashtagBadge } from "@/components/podcasts/podcast-hashtag-badge";
 import { PodcastStatusBadge } from "@/components/podcasts/podcast-status-badge";
 import { YouTubeEmbed } from "@/components/podcasts/youtube-embed";
 import { TagList } from "@/components/tags/tag-input";
@@ -41,6 +42,7 @@ export default async function PodcastDetailPage({ params, searchParams }: PagePr
               <div className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <PodcastStatusBadge status={podcast.status} />
+                  <PodcastHashtagBadge hashtag={podcast.hashtag} />
                   {podcast.personalRating ? (
                     <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
                       {podcast.personalRating}/10

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MessageSquare, Star } from "lucide-react";
+import { PodcastHashtagBadge } from "@/components/podcasts/podcast-hashtag-badge";
 import { PodcastStatusBadge } from "@/components/podcasts/podcast-status-badge";
 import { TagList } from "@/components/tags/tag-input";
 import { Card } from "@/components/ui/card";
@@ -25,6 +26,7 @@ export function PodcastCard({ podcast }: { podcast: Podcast }) {
               No preview
             </div>
           )}
+          <PodcastHashtagBadge hashtag={podcast.hashtag} className="absolute left-3 top-3" />
         </div>
         <div className="space-y-3 p-3 sm:p-4">
           <div className="flex items-start justify-between gap-3">

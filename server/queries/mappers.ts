@@ -17,6 +17,7 @@ export type PodcastRow = {
   description: string | null;
   status: PodcastStatus;
   personal_rating: number | null;
+  hashtag?: string | null;
   watched_at: string | null;
   main_takeaway: string | null;
   summary: string | null;
@@ -69,6 +70,7 @@ export function mapPodcast(row: PodcastRow): Podcast {
     description: row.description,
     status: row.status,
     personalRating: row.personal_rating,
+    hashtag: row.hashtag ?? null,
     watchedAt: row.watched_at,
     mainTakeaway: row.main_takeaway,
     summary: row.summary,
