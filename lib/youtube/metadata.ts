@@ -138,6 +138,11 @@ type OpenGraphMetadata = {
   image: string | null;
 };
 
+type VkImageCandidate = {
+  url: string;
+  width: number;
+};
+
 export async function fetchVideoMetadata(source: VideoSource): Promise<MetadataResult> {
   if (source.provider === "youtube") {
     return fetchYouTubeVideoMetadata(source.id);
@@ -292,6 +297,14 @@ export async function fetchVkEmbedThumbnailUrl(source: VideoSource): Promise<str
 }
 
 export function extractVkEmbedThumbnailUrl(html: string): string | null {
+  const structuredThumbnail =
+    extractWidestVkImageUrl(html, "image") ??
+    extractWidestVkImageUrl(html, "first_frame");
+
+  if (structuredThumbnail) {
+    return structuredThumbnail;
+  }
+
   const patterns = [
     /background-image:\s*url\((["']?)(.*?)\1\)/i,
     /"thumb"\s*:\s*"([^"]+)"/i,
@@ -313,6 +326,76 @@ export function extractVkEmbedThumbnailUrl(html: string): string | null {
     getMetaContent(html, "twitter:image") ??
     null
   );
+}
+
+function extractWidestVkImageUrl(
+  html: string,
+  key: "image" | "first_frame",
+): string | null {
+  const section = extractJsonArraySection(html, key);
+  if (!section) {
+    return null;
+  }
+
+  const candidates = Array.from(section.matchAll(/\{[^{}]*\}/g))
+    .map((match) => {
+      const object = match[0];
+      const urlMatch = object.match(/"url"\s*:\s*"([^"]+)"/i);
+      const widthMatch = object.match(/"width"\s*:\s*(\d+)/i);
+      const url = urlMatch?.[1] ? normalizeExtractedImageUrl(urlMatch[1]) : null;
+
+      return url
+        ? {
+            url,
+            width: widthMatch?.[1] ? Number(widthMatch[1]) : 0,
+          }
+        : null;
+    })
+    .filter((candidate): candidate is VkImageCandidate => Boolean(candidate))
+    .sort((a, b) => b.width - a.width);
+
+  return candidates[0]?.url ?? null;
+}
+
+function extractJsonArraySection(html: string, key: string): string | null {
+  const pattern = new RegExp(`"${escapeRegExp(key)}"\\s*:\\s*\\[`, "i");
+  const match = pattern.exec(html);
+  if (!match) {
+    return null;
+  }
+
+  let depth = 1;
+  let inString = false;
+  let escaped = false;
+  const start = match.index + match[0].length;
+
+  for (let index = start; index < html.length; index += 1) {
+    const char = html[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inString = true;
+    } else if (char === "[") {
+      depth += 1;
+    } else if (char === "]") {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(start, index);
+      }
+    }
+  }
+
+  return null;
 }
 
 function normalizeExtractedImageUrl(value: string): string | null {

@@ -97,6 +97,14 @@ describe("extractVkEmbedThumbnailUrl", () => {
       ),
     ).toBe("https://sun9-1.userapi.com/thumb.jpg?x=1&y=2");
   });
+
+  it("chooses the widest thumbnail from VK embed image arrays", () => {
+    expect(
+      extractVkEmbedThumbnailUrl(
+        `"image":[{"url":"https:\\/\\/sun9-1.userapi.com\\/small.jpg","width":130},{"url":"https:\\/\\/sun9-2.userapi.com\\/large.jpg","width":4096}]`,
+      ),
+    ).toBe("https://sun9-2.userapi.com/large.jpg");
+  });
 });
 
 describe("parseYouTubeDurationToSeconds", () => {
