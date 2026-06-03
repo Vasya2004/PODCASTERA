@@ -1,6 +1,6 @@
 # Podcastera
 
-MVP веб-приложения для личной библиотеки просмотренных YouTube-подкастов:
+MVP веб-приложения для личной библиотеки просмотренных YouTube и VK Video подкастов:
 подкасты, статусы просмотра, заметки с таймкодами, инсайты, теги, рейтинг,
 и экспорт данных.
 
@@ -32,9 +32,11 @@ OPENAI_API_KEY=
 GOOGLE_DRIVE_CLIENT_ID=
 GOOGLE_DRIVE_CLIENT_SECRET=
 GOOGLE_DRIVE_REDIRECT_URI=
+VK_VIDEO_ACCESS_TOKEN=
 ```
 
 `YOUTUBE_API_KEY` is optional and used only server-side for metadata lookup.
+`VK_VIDEO_ACCESS_TOKEN` is optional and improves VK Video metadata lookup; without it the app tries public page metadata and still allows manual entry.
 `OPENAI_API_KEY` is reserved for the optional AI module.
 Google Drive variables are optional and used for backup sync from Settings.
 

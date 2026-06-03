@@ -215,7 +215,7 @@ export async function getInsights(filters: {
         created_at,
         updated_at,
         note_tags(tags(id, name, color)),
-        podcasts(id, title, channel_title, youtube_video_id)
+        podcasts(id, title, channel_title, youtube_url, youtube_video_id)
       `,
     )
     .eq("user_id", user.id)

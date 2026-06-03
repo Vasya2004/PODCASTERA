@@ -11,6 +11,26 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "i.ytimg.com",
       },
+      {
+        protocol: "https",
+        hostname: "**.userapi.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.vk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.vkvideo.ru",
+      },
+      {
+        protocol: "https",
+        hostname: "**.mycdn.me",
+      },
+      {
+        protocol: "https",
+        hostname: "iv.okcdn.ru",
+      },
     ],
   },
 };

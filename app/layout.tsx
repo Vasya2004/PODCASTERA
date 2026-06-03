@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Podcastera",
-  description: "Personal knowledge base for YouTube podcasts.",
+  description: "Personal knowledge base for YouTube and VK Video podcasts.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [

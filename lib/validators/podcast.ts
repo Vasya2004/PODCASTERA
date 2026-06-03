@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { extractYouTubeVideoId } from "@/lib/youtube/utils";
+import { isSupportedVideoUrl } from "@/lib/youtube/utils";
 
 export const podcastStatusSchema = z.enum([
   "want_to_watch",
@@ -28,9 +28,9 @@ export const podcastFormSchema = z.object({
   youtubeUrl: z
     .string()
     .trim()
-    .min(1, "YouTube URL is required")
-    .refine((value) => Boolean(extractYouTubeVideoId(value)), {
-      message: "Paste a valid YouTube URL",
+    .min(1, "Video URL is required")
+    .refine((value) => isSupportedVideoUrl(value), {
+      message: "Paste a valid YouTube or VK Video URL",
     }),
   title: z.string().trim().min(1, "Title is required").max(240),
   channelTitle: z.string().trim().max(160).optional().or(z.literal("")),

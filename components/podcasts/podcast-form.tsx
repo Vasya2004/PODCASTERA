@@ -22,6 +22,19 @@ type MetadataState = {
   publishedAt: string;
 };
 
+type VideoMetadataPayload = {
+  title?: string;
+  channelTitle?: string | null;
+  description?: string | null;
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
+  publishedAt?: string | null;
+};
+
+type MetadataResponse =
+  | { ok: true; metadata: VideoMetadataPayload }
+  | { ok: false; message: string };
+
 type PodcastFormProps = {
   podcast?: Podcast;
   action: (previousState: ActionResult, formData: FormData) => Promise<ActionResult>;
@@ -45,23 +58,85 @@ export function PodcastForm({
     publishedAt: podcast?.publishedAt ? podcast.publishedAt.slice(0, 10) : "",
   });
   const [url, setUrl] = useState(podcast?.youtubeUrl ?? "");
+  const [metadataPending, setMetadataPending] = useState(false);
+  const [metadataMessage, setMetadataMessage] = useState<string | null>(null);
+
+  async function loadMetadata() {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) {
+      setMetadataMessage("Вставьте ссылку на YouTube или VK Video.");
+      return;
+    }
+
+    setMetadataPending(true);
+    setMetadataMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/video/metadata?url=${encodeURIComponent(trimmedUrl)}`,
+      );
+      const payload = (await response.json()) as MetadataResponse;
+
+      if (!payload.ok) {
+        setMetadataMessage(payload.message);
+        return;
+      }
+
+      setMetadata((current) => ({
+        title: payload.metadata.title ?? current.title,
+        channelTitle: payload.metadata.channelTitle ?? current.channelTitle,
+        description: payload.metadata.description ?? current.description,
+        thumbnailUrl: payload.metadata.thumbnailUrl ?? current.thumbnailUrl,
+        durationSeconds:
+          payload.metadata.durationSeconds !== undefined &&
+          payload.metadata.durationSeconds !== null
+            ? String(payload.metadata.durationSeconds)
+            : current.durationSeconds,
+        publishedAt: payload.metadata.publishedAt
+          ? payload.metadata.publishedAt.slice(0, 10)
+          : current.publishedAt,
+      }));
+      setMetadataMessage("Метаданные загружены.");
+    } catch (error) {
+      setMetadataMessage(
+        error instanceof Error ? error.message : "Не удалось загрузить метаданные.",
+      );
+    } finally {
+      setMetadataPending(false);
+    }
+  }
 
   return (
     <Card className="rounded-xl p-3.5 sm:p-5">
       <form action={formAction} className="space-y-5">
         <input type="hidden" name="currentStatus" value={podcast?.status ?? ""} />
         <div className="space-y-2">
-          <Label htmlFor="youtubeUrl">YouTube URL</Label>
-          <Input
-            id="youtubeUrl"
-            name="youtubeUrl"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
-            required
-          />
+          <Label htmlFor="youtubeUrl">Ссылка на видео</Label>
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <Input
+              id="youtubeUrl"
+              name="youtubeUrl"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder="https://www.youtube.com/watch?v=... или https://vk.com/video..."
+              required
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={metadataPending}
+              onClick={loadMetadata}
+              className="h-11 sm:h-10"
+            >
+              {metadataPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Загрузить данные
+            </Button>
+          </div>
           {!state.ok && state.fieldErrors?.youtubeUrl ? (
             <p className="text-sm text-destructive">{state.fieldErrors.youtubeUrl[0]}</p>
+          ) : null}
+          {metadataMessage ? (
+            <p className="text-sm text-muted-foreground">{metadataMessage}</p>
           ) : null}
         </div>
 

@@ -21,7 +21,17 @@ describe("podcastFormSchema", () => {
     expect(result.data?.hashtag).toBe("strategy");
   });
 
-  it("rejects invalid YouTube URLs, ratings, and hashtags", () => {
+  it("accepts VK Video URLs", () => {
+    const result = podcastFormSchema.safeParse({
+      youtubeUrl: "https://vk.com/video-12345_456239017",
+      title: "A useful VK podcast",
+      status: "want_to_watch",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid video URLs, ratings, and hashtags", () => {
     const result = podcastFormSchema.safeParse({
       youtubeUrl: "https://example.com/video",
       title: "A useful podcast",

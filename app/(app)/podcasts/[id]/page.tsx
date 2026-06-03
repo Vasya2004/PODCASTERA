@@ -4,7 +4,7 @@ import { NoteEditor } from "@/components/notes/note-editor";
 import { PodcastForm } from "@/components/podcasts/podcast-form";
 import { PodcastHashtagBadge } from "@/components/podcasts/podcast-hashtag-badge";
 import { PodcastStatusBadge } from "@/components/podcasts/podcast-status-badge";
-import { YouTubeEmbed } from "@/components/podcasts/youtube-embed";
+import { VideoEmbed } from "@/components/podcasts/youtube-embed";
 import { TagList } from "@/components/tags/tag-input";
 import { Card } from "@/components/ui/card";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
@@ -36,7 +36,12 @@ export default async function PodcastDetailPage({ params, searchParams }: PagePr
     <div className="space-y-5 sm:space-y-6">
       <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="space-y-4">
-          <YouTubeEmbed videoId={podcast.youtubeVideoId} title={podcast.title} />
+          <VideoEmbed
+            provider={podcast.videoProvider}
+            videoId={podcast.youtubeVideoId}
+            videoUrl={podcast.youtubeUrl}
+            title={podcast.title}
+          />
           <Card className="p-4 sm:p-5">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
               <div className="min-w-0 space-y-3">

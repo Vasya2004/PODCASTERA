@@ -1,4 +1,5 @@
 import type { NoteType, PodcastStatus } from "@/types/database";
+import type { VideoProvider } from "@/lib/youtube/utils";
 
 export type Tag = {
   id: string;
@@ -10,6 +11,7 @@ export type Podcast = {
   id: string;
   youtubeUrl: string;
   youtubeVideoId: string;
+  videoProvider: VideoProvider;
   title: string;
   channelTitle: string | null;
   thumbnailUrl: string | null;
@@ -43,6 +45,7 @@ export type Note = {
     title: string;
     channelTitle: string | null;
     youtubeVideoId: string;
+    videoProvider: VideoProvider;
   };
 };
 

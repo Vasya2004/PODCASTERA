@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube/utils";
+import { extractVideoSource, getDefaultThumbnailUrl } from "@/lib/youtube/utils";
 import { parseTagList, podcastFormSchema } from "@/lib/validators/podcast";
 import { requireUser } from "@/server/actions/auth-helpers";
 import { failure, success, type ActionResult } from "@/server/actions/result";
@@ -48,9 +48,9 @@ export async function createPodcast(
     };
   }
 
-  const videoId = extractYouTubeVideoId(parsed.data.youtubeUrl);
-  if (!videoId) {
-    return failure("Не удалось извлечь videoId из ссылки.");
+  const videoSource = extractVideoSource(parsed.data.youtubeUrl);
+  if (!videoSource) {
+    return failure("Поддерживаются ссылки на YouTube и VK Video.");
   }
 
   const { supabase, user } = await requireUser();
@@ -60,10 +60,11 @@ export async function createPodcast(
   const podcastPayload = {
     user_id: user.id,
     youtube_url: parsed.data.youtubeUrl,
-    youtube_video_id: videoId,
+    youtube_video_id: videoSource.id,
     title: parsed.data.title,
     channel_title: emptyToNull(parsed.data.channelTitle),
-    thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
+    thumbnail_url:
+      emptyToNull(parsed.data.thumbnailUrl) ?? getDefaultThumbnailUrl(videoSource),
     duration_seconds:
       parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
     published_at: emptyToNull(parsed.data.publishedAt),
@@ -121,9 +122,9 @@ export async function updatePodcast(
     };
   }
 
-  const videoId = extractYouTubeVideoId(parsed.data.youtubeUrl);
-  if (!videoId) {
-    return failure("Не удалось извлечь videoId из ссылки.");
+  const videoSource = extractVideoSource(parsed.data.youtubeUrl);
+  if (!videoSource) {
+    return failure("Поддерживаются ссылки на YouTube и VK Video.");
   }
 
   const { supabase, user } = await requireUser();
@@ -137,10 +138,11 @@ export async function updatePodcast(
 
   const podcastPayload = {
     youtube_url: parsed.data.youtubeUrl,
-    youtube_video_id: videoId,
+    youtube_video_id: videoSource.id,
     title: parsed.data.title,
     channel_title: emptyToNull(parsed.data.channelTitle),
-    thumbnail_url: emptyToNull(parsed.data.thumbnailUrl) ?? getYouTubeThumbnailUrl(videoId),
+    thumbnail_url:
+      emptyToNull(parsed.data.thumbnailUrl) ?? getDefaultThumbnailUrl(videoSource),
     duration_seconds:
       parsed.data.durationSeconds === "" ? null : parsed.data.durationSeconds ?? null,
     published_at: emptyToNull(parsed.data.publishedAt),

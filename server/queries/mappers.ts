@@ -1,6 +1,11 @@
 import type { Note, Podcast, Tag } from "@/types/domain";
 import type { NoteType, PodcastStatus } from "@/types/database";
-import { getYouTubeThumbnailUrl } from "@/lib/youtube/utils";
+import {
+  extractVideoSource,
+  getDefaultThumbnailUrl,
+  type VideoProvider,
+  type VideoSource,
+} from "@/lib/youtube/utils";
 
 type TagRelation = { tags: TagRow | TagRow[] | null };
 type TagRow = { id: string; name: string; color: string | null };
@@ -41,6 +46,7 @@ export type NoteRow = {
     id: string;
     title: string;
     channel_title: string | null;
+    youtube_url?: string;
     youtube_video_id: string;
   } | null;
 };
@@ -58,13 +64,16 @@ export function mapTags(relations: TagRelation[] | undefined): Tag[] {
 }
 
 export function mapPodcast(row: PodcastRow): Podcast {
+  const videoSource = getStoredVideoSource(row.youtube_url, row.youtube_video_id);
+
   return {
     id: row.id,
     youtubeUrl: row.youtube_url,
     youtubeVideoId: row.youtube_video_id,
+    videoProvider: videoSource.provider,
     title: row.title,
     channelTitle: row.channel_title,
-    thumbnailUrl: row.thumbnail_url ?? getYouTubeThumbnailUrl(row.youtube_video_id),
+    thumbnailUrl: row.thumbnail_url ?? getDefaultThumbnailUrl(videoSource),
     durationSeconds: row.duration_seconds,
     publishedAt: row.published_at,
     description: row.description,
@@ -98,7 +107,25 @@ export function mapNote(row: NoteRow): Note {
           title: row.podcasts.title,
           channelTitle: row.podcasts.channel_title,
           youtubeVideoId: row.podcasts.youtube_video_id,
+          videoProvider: getStoredVideoSource(
+            row.podcasts.youtube_url ?? "",
+            row.podcasts.youtube_video_id,
+          ).provider,
         }
       : undefined,
   };
+}
+
+function getStoredVideoSource(url: string, id: string): VideoSource {
+  return (
+    extractVideoSource(url) ?? {
+      provider: inferStoredVideoProvider(id),
+      id,
+      originalUrl: url,
+    }
+  );
+}
+
+function inferStoredVideoProvider(id: string): VideoProvider {
+  return /^-?\d+_\d+$/.test(id) ? "vk" : "youtube";
 }

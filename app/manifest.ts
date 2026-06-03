@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Podcastera",
     short_name: "Podcastera",
-    description: "Personal knowledge base for YouTube podcasts.",
+    description: "Personal knowledge base for YouTube and VK Video podcasts.",
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",

@@ -1,26 +1,124 @@
+export type VideoProvider = "youtube" | "vk";
+
+export type VideoSource = {
+  provider: VideoProvider;
+  id: string;
+  originalUrl: string;
+};
+
+export function extractVideoSource(url: string): VideoSource | null {
+  return extractYouTubeVideoSource(url) ?? extractVkVideoSource(url);
+}
+
+export function isSupportedVideoUrl(url: string): boolean {
+  return Boolean(extractVideoSource(url));
+}
+
+export function getVideoEmbedUrl(source: VideoSource): string {
+  if (source.provider === "youtube") {
+    return `https://www.youtube.com/embed/${source.id}`;
+  }
+
+  const [ownerId, videoId] = source.id.split("_");
+  return `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoId}`;
+}
+
+export function getDefaultThumbnailUrl(source: VideoSource): string | null {
+  if (source.provider === "youtube") {
+    return getYouTubeThumbnailUrl(source.id);
+  }
+
+  return null;
+}
+
 export function extractYouTubeVideoId(url: string): string | null {
+  return extractYouTubeVideoSource(url)?.id ?? null;
+}
+
+function extractYouTubeVideoSource(url: string): VideoSource | null {
   const value = url.trim();
 
   if (/^[a-zA-Z0-9_-]{11}$/.test(value)) {
-    return value;
+    return { provider: "youtube", id: value, originalUrl: value };
   }
 
   try {
     const parsed = new URL(value);
     const host = parsed.hostname.replace(/^www\./, "");
+    let videoId: string | null = null;
 
     if (host === "youtu.be") {
-      return normalizeVideoId(parsed.pathname.split("/").filter(Boolean)[0]);
+      videoId = normalizeYouTubeVideoId(parsed.pathname.split("/").filter(Boolean)[0]);
     }
 
     if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
       if (parsed.pathname === "/watch") {
-        return normalizeVideoId(parsed.searchParams.get("v"));
+        videoId = normalizeYouTubeVideoId(parsed.searchParams.get("v"));
       }
 
-      const [kind, id] = parsed.pathname.split("/").filter(Boolean);
+      const [kind, pathVideoId] = parsed.pathname.split("/").filter(Boolean);
       if (kind === "embed" || kind === "shorts" || kind === "live") {
-        return normalizeVideoId(id);
+        const normalized = normalizeYouTubeVideoId(pathVideoId);
+        return normalized
+          ? { provider: "youtube", id: normalized, originalUrl: value }
+          : null;
+      }
+    }
+
+    return videoId ? { provider: "youtube", id: videoId, originalUrl: value } : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeYouTubeVideoId(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const id = value.trim();
+  return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+}
+
+export function extractVkVideoId(url: string): string | null {
+  return extractVkVideoSource(url)?.id ?? null;
+}
+
+function extractVkVideoSource(url: string): VideoSource | null {
+  const value = url.trim();
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.replace(/^www\./, "").replace(/^m\./, "");
+
+    if (!["vk.com", "vk.ru", "vkvideo.ru"].includes(host)) {
+      return null;
+    }
+
+    if (parsed.pathname === "/video_ext.php") {
+      const ownerId = normalizeVkOwnerId(parsed.searchParams.get("oid"));
+      const videoId = normalizeVkItemId(parsed.searchParams.get("id"));
+      return ownerId && videoId
+        ? { provider: "vk", id: `${ownerId}_${videoId}`, originalUrl: value }
+        : null;
+    }
+
+    const candidates = [
+      parsed.pathname,
+      parsed.search,
+      parsed.searchParams.get("z") ?? "",
+      parsed.hash,
+    ];
+
+    for (const candidate of candidates) {
+      const decoded = decodeURIComponent(candidate);
+      const match = decoded.match(/(?:^|[/?&#])(?:video|clip)(-?\d+)_(\d+)/);
+      if (match) {
+        return {
+          provider: "vk",
+          id: `${match[1]}_${match[2]}`,
+          originalUrl: value,
+        };
       }
     }
   } catch {
@@ -30,13 +128,22 @@ export function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
-function normalizeVideoId(value: string | null | undefined): string | null {
+function normalizeVkOwnerId(value: string | null | undefined): string | null {
   if (!value) {
     return null;
   }
 
   const id = value.trim();
-  return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+  return /^-?\d+$/.test(id) ? id : null;
+}
+
+function normalizeVkItemId(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const id = value.trim();
+  return /^\d+$/.test(id) ? id : null;
 }
 
 export function parseYouTubeDurationToSeconds(duration: string): number {

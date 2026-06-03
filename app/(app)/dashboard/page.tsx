@@ -47,7 +47,7 @@ export default async function DashboardPage() {
         ) : (
           <EmptyState
             title="Библиотека пока пустая"
-            description="Добавьте первый YouTube-подкаст и начните собирать мысли, инсайты и действия."
+            description="Добавьте первый видео-подкаст и начните собирать мысли, инсайты и действия."
             action={
               <Link href="/podcasts/new">
                 <Button>Добавить подкаст</Button>
