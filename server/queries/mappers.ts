@@ -3,6 +3,7 @@ import type { NoteType, PodcastStatus } from "@/types/database";
 import {
   extractVideoSource,
   getDefaultThumbnailUrl,
+  getVideoThumbnailProxyUrl,
   type VideoProvider,
   type VideoSource,
 } from "@/lib/youtube/utils";
@@ -73,7 +74,10 @@ export function mapPodcast(row: PodcastRow): Podcast {
     videoProvider: videoSource.provider,
     title: row.title,
     channelTitle: row.channel_title,
-    thumbnailUrl: row.thumbnail_url ?? getDefaultThumbnailUrl(videoSource),
+    thumbnailUrl:
+      row.thumbnail_url ??
+      getDefaultThumbnailUrl(videoSource) ??
+      getVideoThumbnailProxyUrl(videoSource),
     durationSeconds: row.duration_seconds,
     publishedAt: row.published_at,
     description: row.description,

@@ -1,4 +1,8 @@
-import { parseYouTubeDurationToSeconds, type VideoSource } from "@/lib/youtube/utils";
+import {
+  getVideoEmbedUrl,
+  parseYouTubeDurationToSeconds,
+  type VideoSource,
+} from "@/lib/youtube/utils";
 
 export type VideoMetadata = {
   title: string;
@@ -264,6 +268,72 @@ async function fetchVkOpenGraphMetadata(source: VideoSource): Promise<MetadataRe
           : "Unable to fetch VK public page metadata.",
     };
   }
+}
+
+export async function fetchVkEmbedThumbnailUrl(source: VideoSource): Promise<string | null> {
+  try {
+    const response = await fetch(getVideoEmbedUrl(source), {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (compatible; PodcasteraBot/1.0; +https://podcastera-ten.vercel.app)",
+        accept: "text/html,application/xhtml+xml",
+      },
+      next: { revalidate: 60 * 60 },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return extractVkEmbedThumbnailUrl(await response.text());
+  } catch {
+    return null;
+  }
+}
+
+export function extractVkEmbedThumbnailUrl(html: string): string | null {
+  const patterns = [
+    /background-image:\s*url\((["']?)(.*?)\1\)/i,
+    /"thumb"\s*:\s*"([^"]+)"/i,
+    /"poster"\s*:\s*"([^"]+)"/i,
+    /"photo_(?:1280|800|640|320)"\s*:\s*"([^"]+)"/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    const value = match?.[2] ?? match?.[1];
+    const normalized = value ? normalizeExtractedImageUrl(value) : null;
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return (
+    getMetaContent(html, "og:image") ??
+    getMetaContent(html, "twitter:image") ??
+    null
+  );
+}
+
+function normalizeExtractedImageUrl(value: string): string | null {
+  const decoded = decodeHtmlEntities(value)
+    .replace(/\\\//g, "/")
+    .replace(/\\u0026/g, "&")
+    .trim();
+
+  if (!decoded || decoded.startsWith("data:")) {
+    return null;
+  }
+
+  if (decoded.startsWith("//")) {
+    return `https:${decoded}`;
+  }
+
+  if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+    return decoded;
+  }
+
+  return null;
 }
 
 function pickVkThumbnailUrl(item: VkVideoItem) {

@@ -31,6 +31,18 @@ export function getDefaultThumbnailUrl(source: VideoSource): string | null {
   return null;
 }
 
+export function getVideoThumbnailProxyUrl(source: VideoSource): string | null {
+  if (source.provider !== "vk") {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    url: source.originalUrl || getVideoEmbedUrl(source),
+  });
+
+  return `/api/video/thumbnail?${params.toString()}`;
+}
+
 export function extractYouTubeVideoId(url: string): string | null {
   return extractYouTubeVideoSource(url)?.id ?? null;
 }

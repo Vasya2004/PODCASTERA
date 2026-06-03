@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { extractVkEmbedThumbnailUrl } from "@/lib/youtube/metadata";
 import {
   extractVideoSource,
   extractVkVideoId,
   extractYouTubeVideoId,
+  getVideoThumbnailProxyUrl,
   parseTimestampToSeconds,
   parseYouTubeDurationToSeconds,
 } from "@/lib/youtube/utils";
@@ -65,6 +67,35 @@ describe("extractVideoSource", () => {
     expect(extractVideoSource("https://vk.com/video-12345_456239017")?.provider).toBe(
       "vk",
     );
+  });
+});
+
+describe("getVideoThumbnailProxyUrl", () => {
+  it("builds a local thumbnail URL for VK videos", () => {
+    const source = extractVideoSource("https://vk.com/video-12345_456239017");
+
+    expect(source).not.toBeNull();
+    expect(getVideoThumbnailProxyUrl(source!)).toBe(
+      "/api/video/thumbnail?url=https%3A%2F%2Fvk.com%2Fvideo-12345_456239017",
+    );
+  });
+});
+
+describe("extractVkEmbedThumbnailUrl", () => {
+  it("extracts thumbnail URLs from VK embed styles", () => {
+    expect(
+      extractVkEmbedThumbnailUrl(
+        `<div style="background-image:url('https://sun9-1.userapi.com/thumb.jpg')"></div>`,
+      ),
+    ).toBe("https://sun9-1.userapi.com/thumb.jpg");
+  });
+
+  it("extracts escaped thumbnail URLs from VK embed JSON", () => {
+    expect(
+      extractVkEmbedThumbnailUrl(
+        `{"thumb":"https:\\/\\/sun9-1.userapi.com\\/thumb.jpg?x=1\\u0026y=2"}`,
+      ),
+    ).toBe("https://sun9-1.userapi.com/thumb.jpg?x=1&y=2");
   });
 });
 
