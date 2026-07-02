@@ -4,7 +4,6 @@ import {
   BookOpen,
   Lightbulb,
   LogOut,
-  Plus,
   Settings,
 } from "lucide-react";
 import { signOut } from "@/server/actions/auth";
@@ -22,17 +21,6 @@ const navItems = [
 export function AppSidebar({ email }: { email: string }) {
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-border bg-card/95 px-4 py-3 backdrop-blur md:hidden">
-        <div className="flex items-center justify-between gap-3">
-          <BrandLogo compact />
-          <Link href="/podcasts/new">
-            <Button className="h-9 rounded-full px-3" aria-label="Добавить подкаст">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </header>
-
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-card/90 backdrop-blur md:block">
         <div className="px-5 py-6">
           <BrandLogo email={email} />
@@ -49,14 +37,6 @@ export function AppSidebar({ email }: { email: string }) {
             </Link>
           ))}
         </nav>
-        <div className="px-5 pt-4">
-          <Link href="/podcasts/new">
-            <Button className="w-full">
-              <Plus className="h-4 w-4" />
-              Добавить подкаст
-            </Button>
-          </Link>
-        </div>
         <form action={signOut} className="absolute bottom-4 w-full px-3">
           <Button variant="ghost" type="submit" className="w-full justify-start">
             <LogOut className="h-4 w-4" />

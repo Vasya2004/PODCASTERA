@@ -28,7 +28,7 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-background">
       <AppSidebar email={user.email ?? ""} />
-      <main className="mx-auto min-h-screen w-full max-w-[1500px] overflow-x-hidden px-3 pb-32 pt-20 sm:px-4 sm:pt-24 md:pb-8 md:pl-72 md:pr-8 md:pt-8">
+      <main className="mx-auto min-h-screen w-full max-w-[1500px] overflow-x-hidden px-3 pb-32 pt-4 sm:px-4 md:pb-8 md:pl-72 md:pr-8 md:pt-8">
         {children}
       </main>
       <Toaster />

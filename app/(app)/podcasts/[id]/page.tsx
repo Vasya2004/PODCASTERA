@@ -34,15 +34,15 @@ export default async function PodcastDetailPage({ params, searchParams }: PagePr
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="space-y-4">
+      <div className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)]">
+        <section className="min-w-0 space-y-3.5">
           <VideoEmbed
             provider={podcast.videoProvider}
             videoId={podcast.youtubeVideoId}
             videoUrl={podcast.youtubeUrl}
             title={podcast.title}
           />
-          <Card className="p-4 sm:p-5">
+          <Card className="p-3.5 sm:p-4">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
               <div className="min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -88,11 +88,11 @@ export default async function PodcastDetailPage({ params, searchParams }: PagePr
           </details>
         </section>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-3">
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Заметки</h2>
             {notes.length > 0 ? (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-1.5">
                 {notes.map((note) => (
                   <NoteCard key={note.id} note={note} />
                 ))}

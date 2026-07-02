@@ -58,9 +58,11 @@ export default async function InsightsPage({ searchParams }: PageProps) {
       </form>
 
       {notes.length > 0 ? (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="columns-1 gap-2 sm:columns-2">
           {notes.map((note) => (
-            <NoteCard key={note.id} note={note} showPodcast compact />
+            <div key={note.id} className="mb-2 break-inside-avoid">
+              <NoteCard note={note} showPodcast compact />
+            </div>
           ))}
         </div>
       ) : (

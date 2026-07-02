@@ -6,9 +6,6 @@ import { Loader2, Send } from "lucide-react";
 import { createNote } from "@/server/actions/notes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/server/actions/result";
 
@@ -31,26 +28,12 @@ export function NoteEditor({ podcastId }: { podcastId: string }) {
       <form ref={formRef} action={formAction} className="space-y-3">
         <input type="hidden" name="podcastId" value={podcastId} />
         <input type="hidden" name="timestamp" value="" />
-        <div className="grid gap-3 sm:grid-cols-[160px_1fr]">
-          <div className="space-y-2">
-            <Label htmlFor="type">Тип</Label>
-            <Select id="type" name="type" defaultValue="thought" className="h-11 sm:h-10">
-              <option value="thought">Мысль</option>
-              <option value="insight">Инсайт</option>
-              <option value="idea">Идея</option>
-              <option value="action">Действие</option>
-              <option value="question">Вопрос</option>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tags">Теги заметки</Label>
-            <Input id="tags" name="tags" placeholder="idea, execution" />
-          </div>
-        </div>
+        <input type="hidden" name="type" value="thought" />
+        <input type="hidden" name="tags" value="" />
         <Textarea
           name="content"
           placeholder="Запишите мысль сразу во время просмотра..."
-          className="min-h-28"
+          className="min-h-24"
           required
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

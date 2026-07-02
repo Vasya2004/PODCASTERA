@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock3, Eye, Lightbulb, Star } from "lucide-react";
+import { BookOpen, Clock3, Eye, Lightbulb, Star } from "lucide-react";
 import { PodcastCard } from "@/components/podcasts/podcast-card";
 import { NoteCard } from "@/components/notes/note-card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ export default async function DashboardPage() {
         <Link href="/podcasts/new" className="sm:shrink-0">
           <Button className="h-11 w-full sm:h-10 sm:w-auto">
             Добавить подкаст
-            <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -65,9 +64,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {favoriteInsights.length > 0 ? (
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="columns-1 gap-2 sm:columns-2">
             {favoriteInsights.map((note) => (
-              <NoteCard key={note.id} note={note} showPodcast />
+              <div key={note.id} className="mb-2 break-inside-avoid">
+                <NoteCard note={note} showPodcast />
+              </div>
             ))}
           </div>
         ) : (
